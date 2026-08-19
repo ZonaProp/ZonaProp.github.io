@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Publicar · ZonaProp</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#f5f5f5;color:#222;padding:1rem}h1{font-size:1.3rem;margin-bottom:1rem}.box{background:#fff;border-radius:14px;padding:1.2rem;max-width:480px;margin:0 auto;box-shadow:0 2px 12px rgba(0,0,0,.06)}label{display:block;font-size:.85rem;font-weight:600;margin:.6rem 0 .2rem}input,textarea,select{width:100%;padding:.7rem;border:1.5px solid #ddd;border-radius:10px;font-size:.95rem}button{width:100%;padding:.9rem;border:0;border-radius:12px;background:#ff5500;color:#fff;font-weight:800;margin-top:1rem;cursor:pointer}a{color:#ff5500}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>Publicar departamento</h1>
+  <p style="font-size:.9rem;color:#555;margin-bottom:1rem">Completá los datos. Revisamos y publicamos.</p>
+  <label>Título</label>
+  <input id="title" placeholder="Ej. Depto 2 amb Recoleta"/>
+  <label>Zona / Barrio</label>
+  <input id="zona" placeholder="Recoleta, Palermo..."/>
+  <label>Precio mensual</label>
+  <input id="price" placeholder="$ 650.000"/>
+  <label>Ambientes</label>
+  <input id="ambientes" placeholder="2 amb."/>
+  <label>WhatsApp de contacto</label>
+  <input id="tel" placeholder="11 2607-0920"/>
+  <label>Descripción</label>
+  <textarea id="desc" rows="4" placeholder="Detalles del departamento..."></textarea>
+  <button type="button" id="btn">Enviar para revisión</button>
+  <p style="margin-top:1rem;font-size:.85rem"><a href="/">← Volver al listado</a></p>
+  <p id="msg" style="margin-top:.8rem;font-size:.9rem;display:none"></p>
+</div>
+<script>
+const DB_URL = 'https://jsonbin-zeta.vercel.app/api/bins/KHR_lRKYwE';
+document.getElementById('btn').onclick = async function(){
+  const title = document.getElementById('title').value.trim();
+  const zona = document.getElementById('zona').value.trim();
+  const price = document.getElementById('price').value.trim();
+  const tel = document.getElementById('tel').value.trim();
+  if (!title || !tel) { alert('Completá título y teléfono'); return; }
+  const item = {
+    id: 'pub_' + Date.now(),
+    title, zona, price,
+    ambientes: document.getElementById('ambientes').value.trim(),
+    desc: document.getElementById('desc').value.trim(),
+    contacto_tel: tel,
+    contacto_nombre: '',
+    photos: [], main: '',
+    creado: new Date().toISOString()
+  };
+  try {
+    const r = await fetch(DB_URL + '?t=' + Date.now());
+    const db = await r.json();
+    const pending = Array.isArray(db.pending) ? db.pending : [];
+    pending.unshift(item);
+    await fetch(DB_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listings: db.listings||[], pending, leads: db.leads||[], chats: db.chats||[] }) });
+    document.getElementById('msg').style.display = 'block';
+    document.getElementById('msg').textContent = 'Enviado. Lo revisamos y publicamos pronto.';
+    document.getElementById('btn').disabled = true;
+  } catch(e) {
+    alert('Error al enviar. Probá de nuevo o escribinos por WhatsApp.');
+  }
+};
+</script>
+</body>
+</html>
