@@ -164,6 +164,47 @@ Promise.all([
   document.getElementById('ogDesc').setAttribute('content', ogDesc);
   document.getElementById('ogImage').setAttribute('content', img);
 
+  // Schema.org RealEstateListing (JSON-LD)
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    "name": title,
+    "description": ogDesc,
+    "url": pageUrl,
+    "datePosted": new Date().toISOString().split('T')[0],
+    "image": (d.photos && d.photos.length) ? d.photos : (d.main ? [d.main] : [img]),
+    "offers": {
+      "@type": "Offer",
+      "price": parsePrice(d.price) || undefined,
+      "priceCurrency": "ARS",
+      "availability": "https://schema.org/InStock"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": zonaTxt,
+      "addressRegion": "Buenos Aires",
+      "addressCountry": "AR"
+    },
+    "numberOfRooms": ambTxt || undefined,
+    "floorSize": m2Txt ? {
+      "@type": "QuantitativeValue",
+      "value": parseInt(String(m2Txt).replace(/[^0-9]/g,'')) || undefined,
+      "unitCode": "MTK"
+    } : undefined
+  };
+  if (!schema.offers.price) delete schema.offers;
+  if (!schema.numberOfRooms) delete schema.numberOfRooms;
+  if (!schema.floorSize || !schema.floorSize.value) delete schema.floorSize;
+
+  let ld = document.getElementById('schema-ld');
+  if (!ld) {
+    ld = document.createElement('script');
+    ld.type = 'application/ld+json';
+    ld.id = 'schema-ld';
+    document.head.appendChild(ld);
+  }
+  ld.textContent = JSON.stringify(schema);
+
   const photos = (d.photos && d.photos.length) ? d.photos : (d.main ? [d.main] : []);
   window.photos = photos; window.cur = 0;
   const specs = [d.ambientes, d.dormitorios, d.banos, d.m2].filter(Boolean);
