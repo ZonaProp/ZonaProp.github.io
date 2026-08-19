@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5"/>
+<link rel="preconnect" href="https://jsonbin-zeta.vercel.app" crossorigin>
+<link rel="dns-prefetch" href="https://jsonbin-zeta.vercel.app">
 <title>Departamento · ZonaProp Premium</title>
 <meta name="description" content="Departamento en alquiler en Buenos Aires. Fotos, precio y reserva online."/>
 <meta name="robots" content="index, follow"/>
@@ -172,7 +174,6 @@ Promise.all([
   document.getElementById('twDesc').setAttribute('content', ogDesc);
   document.getElementById('twImage').setAttribute('content', img);
 
-  // Schema.org RealEstateListing (JSON-LD)
   const schema = {
     "@context": "https://schema.org",
     "@type": "RealEstateListing",
@@ -181,36 +182,17 @@ Promise.all([
     "url": pageUrl,
     "datePosted": new Date().toISOString().split('T')[0],
     "image": (d.photos && d.photos.length) ? d.photos : (d.main ? [d.main] : [img]),
-    "offers": {
-      "@type": "Offer",
-      "price": parsePrice(d.price) || undefined,
-      "priceCurrency": "ARS",
-      "availability": "https://schema.org/InStock"
-    },
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": zonaTxt,
-      "addressRegion": "Buenos Aires",
-      "addressCountry": "AR"
-    },
+    "offers": { "@type": "Offer", "price": parsePrice(d.price) || undefined, "priceCurrency": "ARS", "availability": "https://schema.org/InStock" },
+    "address": { "@type": "PostalAddress", "addressLocality": zonaTxt, "addressRegion": "Buenos Aires", "addressCountry": "AR" },
     "numberOfRooms": ambTxt || undefined,
-    "floorSize": m2Txt ? {
-      "@type": "QuantitativeValue",
-      "value": parseInt(String(m2Txt).replace(/[^0-9]/g,'')) || undefined,
-      "unitCode": "MTK"
-    } : undefined
+    "floorSize": m2Txt ? { "@type": "QuantitativeValue", "value": parseInt(String(m2Txt).replace(/[^0-9]/g,'')) || undefined, "unitCode": "MTK" } : undefined
   };
   if (!schema.offers.price) delete schema.offers;
   if (!schema.numberOfRooms) delete schema.numberOfRooms;
   if (!schema.floorSize || !schema.floorSize.value) delete schema.floorSize;
 
   let ld = document.getElementById('schema-ld');
-  if (!ld) {
-    ld = document.createElement('script');
-    ld.type = 'application/ld+json';
-    ld.id = 'schema-ld';
-    document.head.appendChild(ld);
-  }
+  if (!ld) { ld = document.createElement('script'); ld.type = 'application/ld+json'; ld.id = 'schema-ld'; document.head.appendChild(ld); }
   ld.textContent = JSON.stringify(schema);
 
   const photos = (d.photos && d.photos.length) ? d.photos : (d.main ? [d.main] : []);
@@ -227,7 +209,7 @@ Promise.all([
 
   document.getElementById('content').innerHTML = `
     <div class=\"gallery\">
-      <img class=\"main\" id=\"mainImg\" src=\"${photos[0]||''}\" alt=\"\">
+      <img class=\"main\" id=\"mainImg\" src=\"${photos[0]||''}\" alt=\"\" fetchpriority=\"high\" decoding=\"async\">
       <div class=\"counter\" id=\"counter\">1 / ${photos.length || 1}</div>
       <div class=\"g-nav\"><button type=\"button\" onclick=\"show(cur-1)\">‹</button><button type=\"button\" onclick=\"show(cur+1)\">›</button></div>
     </div>
@@ -252,7 +234,7 @@ Promise.all([
       <h3>Reserva para asegurar el departamento</h3>
       <div class=\"reserva-row\"><span>Seña / reserva (30%)</span><span class=\"reserva-monto\">${montoReservaFmt}</span></div>
       <div class=\"reserva-row\"><span>Se descuenta del mes si se concreta</span><span>Sí</span></div>
-      <div class=\"reserva-row\"><span>Devolución en la visita si no se concreta</span><span>Sí</span></div>
+      <div class=\"reserva-row\"><span>Se descuenta del mes si se concreta</span><span>Sí</span></div>
       <div class=\"pago-info\">
         <strong>Transferí la reserva a:</strong>
         <div class=\"alias\">Leonela8.mp</div>
@@ -274,17 +256,10 @@ Promise.all([
   document.getElementById('modalMontoTexto').innerHTML = 'Monto de la reserva: <strong>' + montoReservaFmt + '</strong>';
 
   const modal = document.getElementById('modalCondiciones');
-  document.getElementById('btnAbrirCondiciones').onclick = function() {
-    modal.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  };
-  document.getElementById('btnCancelarCond').onclick = function() {
-    modal.classList.remove('open');
-    document.body.style.overflow = '';
-  };
+  document.getElementById('btnAbrirCondiciones').onclick = function() { modal.classList.add('open'); document.body.style.overflow = 'hidden'; };
+  document.getElementById('btnCancelarCond').onclick = function() { modal.classList.remove('open'); document.body.style.overflow = ''; };
   document.getElementById('btnAceptarCond').onclick = function() {
-    modal.classList.remove('open');
-    document.body.style.overflow = '';
+    modal.classList.remove('open'); document.body.style.overflow = '';
     const msg = encodeURIComponent('Hola! Quiero reservar el depto ID ' + d.id + ' (' + (d.title||'') + '). Monto reserva: ' + montoReservaFmt + '. Fecha ingreso: ' + (document.getElementById('fechaIngreso').value || 'a coordinar'));
     window.open(WA + '?text=' + msg, '_blank');
   };
@@ -301,7 +276,7 @@ Promise.all([
   const t = document.getElementById('thumbs');
   photos.forEach((src, i) => {
     const imgEl = document.createElement('img');
-    imgEl.src = src; imgEl.className = i===0?'on':'';
+    imgEl.src = src; imgEl.loading = 'lazy'; imgEl.decoding = 'async'; imgEl.className = i===0?'on':'';
     imgEl.onclick = function(){ show(i); };
     t.appendChild(imgEl);
   });
