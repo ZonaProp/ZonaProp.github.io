@@ -118,9 +118,9 @@ Promise.all([
 
   // Limpiar descripciones rotas / con basura HTML
   let fullDesc = (d.desc || '').trim()
-    .replace(/a?"?\s*\/>/gi, '')
+    .replace(/a?\"?\\s*\\/>/gi, '')
     .replace(/<[^>]*>/g, '')
-    .replace(/\s{2,}/g, ' ')
+    .replace(/\\s{2,}/g, ' ')
     .trim();
 
   const zonaTxt = (d.zona || 'Buenos Aires').trim();
@@ -141,13 +141,20 @@ Promise.all([
     fullDesc = parts.join(' ');
   } else {
     if (zonaTxt && !fullDesc.toLowerCase().includes(zonaTxt.toLowerCase().split(' ')[0])) {
-      fullDesc = fullDesc.replace(/\.$/, '') + `. Ubicado en ${zonaTxt}.`;
+      fullDesc = fullDesc.replace(/\\.$/, '') + `. Ubicado en ${zonaTxt}.`;
     }
   }
 
-  const titleCore = ambTxt ? ('Alquiler ' + ambTxt + ' en ' + zonaTxt) : ((d.title || 'Departamento en alquiler') + ' en ' + zonaTxt);
-  const title = titleCore + (d.price ? ' · ' + d.price : '') + ' | ZonaProp';
-  const ogDesc = (fullDesc.length > 155 ? fullDesc.slice(0, 152).replace(/\s+\S*$/, '') + '…' : fullDesc);
+  // Título optimizado para SEO
+  let titleParts = [];
+  if (ambTxt) titleParts.push('Alquiler ' + ambTxt);
+  else titleParts.push(d.title || 'Departamento en alquiler');
+  titleParts.push('en ' + zonaTxt);
+  if (m2Txt) titleParts.push(m2Txt);
+  if (featsArr.some(f => /cochera|garage|estacionamiento/i.test(f))) titleParts.push('con cochera');
+  const titleCore = titleParts.join(' ');
+  const title = titleCore + (d.price ? ' · ' + d.price : '') + ' | ZonaProp Premium';
+  const ogDesc = (fullDesc.length > 155 ? fullDesc.slice(0, 152).replace(/\\s+\\S*$/, '') + '…' : fullDesc);
   const img = (d.photos && d.photos[0]) || d.main || 'https://zonaprop.github.io/logo.svg';
   const pageUrl = 'https://zonaprop.github.io/depto.html?id=' + encodeURIComponent(d.id);
 
@@ -170,45 +177,45 @@ Promise.all([
   const minDate = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0') + '-' + String(hoy.getDate()).padStart(2,'0');
 
   document.getElementById('content').innerHTML = `
-    <div class="gallery">
-      <img class="main" id="mainImg" src="${photos[0]||''}" alt="">
-      <div class="counter" id="counter">1 / ${photos.length || 1}</div>
-      <div class="g-nav"><button type="button" onclick="show(cur-1)">‹</button><button type="button" onclick="show(cur+1)">›</button></div>
+    <div class=\"gallery\">
+      <img class=\"main\" id=\"mainImg\" src=\"${photos[0]||''}\" alt=\"\">
+      <div class=\"counter\" id=\"counter\">1 / ${photos.length || 1}</div>
+      <div class=\"g-nav\"><button type=\"button\" onclick=\"show(cur-1)\">‹</button><button type=\"button\" onclick=\"show(cur+1)\">›</button></div>
     </div>
-    <div class="thumbs" id="thumbs"></div>
-    <div class="box">
-      <div class="price">${d.price || 'Consultar'}</div>
-      <div class="h2">${d.title || 'Departamento'}</div>
-      ${d.zona ? `<div class="zona">📍 ${d.zona}${d.community ? ' · Comunidad' : ''}</div>` : ''}
-      <div class="specs">${specs.map(s => `<span class="spec">${s}</span>`).join('')}</div>
+    <div class=\"thumbs\" id=\"thumbs\"></div>
+    <div class=\"box\">
+      <div class=\"price\">${d.price || 'Consultar'}</div>
+      <div class=\"h2\">${d.title || 'Departamento'}</div>
+      ${d.zona ? `<div class=\"zona\">📍 ${d.zona}${d.community ? ' · Comunidad' : ''}</div>` : ''}
+      <div class=\"specs\">${specs.map(s => `<span class=\"spec\">${s}</span>`).join('')}</div>
     </div>
-    <div class="section">
+    <div class=\"section\">
       <h3>Cómo funciona</h3>
-      <div class="steps">
-        <div class="step"><div class="num">1</div><div><strong>Consultá</strong><span> Escribinos por WhatsApp sobre este depto</span></div></div>
-        <div class="step"><div class="num">2</div><div><strong>Reservá el 30%</strong><span> Transferí a Leonela8.mp (Leonela Giselle López)</span></div></div>
-        <div class="step"><div class="num">3</div><div><strong>Confirmá</strong><span> Avisá por WhatsApp con el comprobante</span></div></div>
+      <div class=\"steps\">
+        <div class=\"step\"><div class=\"num\">1</div><div><strong>Consultá</strong><span> Escribinos por WhatsApp sobre este depto</span></div></div>
+        <div class=\"step\"><div class=\"num\">2</div><div><strong>Reservá el 30%</strong><span> Transferí a Leonela8.mp (Leonela Giselle López)</span></div></div>
+        <div class=\"step\"><div class=\"num\">3</div><div><strong>Confirmá</strong><span> Avisá por WhatsApp con el comprobante</span></div></div>
       </div>
     </div>
-    <div class="section"><h3>Descripción</h3><div class="desc">${fullDesc.replace(/</g,'<')}</div></div>
-    ${feats.length ? `<div class="section"><h3>Características</h3><div class="feat-list">${feats.map(f => `<span class="feat">${f}</span>`).join('')}</div></div>` : ''}
-    <div class="reserva">
+    <div class=\"section\"><h3>Descripción</h3><div class=\"desc\">${fullDesc.replace(/</g,'<')}</div></div>
+    ${feats.length ? `<div class=\"section\"><h3>Características</h3><div class=\"feat-list\">${feats.map(f => `<span class=\"feat\">${f}</span>`).join('')}</div></div>` : ''}
+    <div class=\"reserva\">
       <h3>Reserva para asegurar el departamento</h3>
-      <div class="reserva-row"><span>Seña / reserva (30%)</span><span class="reserva-monto">${montoReservaFmt}</span></div>
-      <div class="reserva-row"><span>Se descuenta del mes si se concreta</span><span>Sí</span></div>
-      <div class="reserva-row"><span>Devolución en la visita si no se concreta</span><span>Sí</span></div>
-      <div class="pago-info">
+      <div class=\"reserva-row\"><span>Seña / reserva (30%)</span><span class=\"reserva-monto\">${montoReservaFmt}</span></div>
+      <div class=\"reserva-row\"><span>Se descuenta del mes si se concreta</span><span>Sí</span></div>
+      <div class=\"reserva-row\"><span>Devolución en la visita si no se concreta</span><span>Sí</span></div>
+      <div class=\"pago-info\">
         <strong>Transferí la reserva a:</strong>
-        <div class="alias">Leonela8.mp</div>
+        <div class=\"alias\">Leonela8.mp</div>
         Titularidad: <strong>Leonela Giselle López</strong><br><br>
         Después de pagar, avisanos por <strong>WhatsApp</strong>.
       </div>
-      <div class="fecha-ingreso">
-        <label for="fechaIngreso">📅 Fecha de ingreso deseada</label>
-        <input type="date" id="fechaIngreso" min="${minDate}" />
-        <p class="fecha-hint">Elegí la fecha en la que querés ingresar.</p>
+      <div class=\"fecha-ingreso\">
+        <label for=\"fechaIngreso\">📅 Fecha de ingreso deseada</label>
+        <input type=\"date\" id=\"fechaIngreso\" min=\"${minDate}\" />
+        <p class=\"fecha-hint\">Elegí la fecha en la que querés ingresar.</p>
       </div>
-      <button type="button" class="btn-reservar" id="btnAbrirCondiciones">Ver condiciones y reservar</button>
+      <button type=\"button\" class=\"btn-reservar\" id=\"btnAbrirCondiciones\">Ver condiciones y reservar</button>
     </div>
   `;
 
