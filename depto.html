@@ -9,10 +9,15 @@
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="ZonaProp Premium"/>
 <meta property="og:locale" content="es_AR"/>
-<meta property="og:url" content="https://zonaprop.github.io/depto.html"/>
+<meta property="og:url" content="https://zonaprop.github.io/depto.html" id="ogUrl"/>
 <meta property="og:title" content="Departamento · ZonaProp Premium" id="ogTitle"/>
 <meta property="og:description" content="Departamento en alquiler en Buenos Aires." id="ogDesc"/>
 <meta property="og:image" content="https://zonaprop.github.io/logo.svg" id="ogImage"/>
+<link rel="canonical" href="https://zonaprop.github.io/depto.html" id="canonical"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Departamento · ZonaProp Premium" id="twTitle"/>
+<meta name="twitter:description" content="Departamento en alquiler en Buenos Aires." id="twDesc"/>
+<meta name="twitter:image" content="https://zonaprop.github.io/logo.svg" id="twImage"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,sans-serif;background:#f0f0f0;color:#222;padding-bottom:72px}
@@ -116,7 +121,6 @@ Promise.all([
     return;
   }
 
-  // Limpiar descripciones rotas / con basura HTML
   let fullDesc = (d.desc || '').trim()
     .replace(/a?\"?\\s*\\/>/gi, '')
     .replace(/<[^>]*>/g, '')
@@ -145,7 +149,6 @@ Promise.all([
     }
   }
 
-  // Título optimizado para SEO
   let titleParts = [];
   if (ambTxt) titleParts.push('Alquiler ' + ambTxt);
   else titleParts.push(d.title || 'Departamento en alquiler');
@@ -163,6 +166,11 @@ Promise.all([
   document.getElementById('ogTitle').setAttribute('content', title);
   document.getElementById('ogDesc').setAttribute('content', ogDesc);
   document.getElementById('ogImage').setAttribute('content', img);
+  document.getElementById('ogUrl').setAttribute('content', pageUrl);
+  document.getElementById('canonical').setAttribute('href', pageUrl);
+  document.getElementById('twTitle').setAttribute('content', title);
+  document.getElementById('twDesc').setAttribute('content', ogDesc);
+  document.getElementById('twImage').setAttribute('content', img);
 
   // Schema.org RealEstateListing (JSON-LD)
   const schema = {
